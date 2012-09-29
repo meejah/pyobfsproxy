@@ -36,3 +36,9 @@ class ObfsCircuitTests(unittest.TestCase):
         self.assertTrue(self.obfs_server_proto.circuit.circuitIsReady())
         self.obfs_server_proto.dataReceived(TEST_FILE)
         self.assertEqual(self.client_transport.value(), TEST_FILE)
+
+    def test_chunked_client_transfer(self):
+        self.assertTrue(self.obfs_server_proto.circuit.circuitIsReady())
+        for i in range(0, len(TEST_FILE), 5):
+            self.obfs_server_proto.dataReceived(TEST_FILE[i:i+5])
+        self.assertEqual(self.client_transport.value(), TEST_FILE)
