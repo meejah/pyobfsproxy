@@ -14,8 +14,8 @@ multiple lines'''
 class ObfsCircuitTests(unittest.TestCase):
 
     def setUp(self):
-        self.server_transport = proto_helpers.StringTransport()
-        self.client_transport = proto_helpers.StringTransport()
+        self.server_transport = proto_helpers.StringTransportWithDisconnection()
+        self.client_transport = proto_helpers.StringTransportWithDisconnection()
 
         ## this could be made more-better if
         ## StaticDestinationServerFactory took the reactor (and
@@ -30,7 +30,15 @@ class ObfsCircuitTests(unittest.TestCase):
         self.obfs_client_proto = network.StaticDestinationClientFactory(self.obfs_server_proto.circuit, 'server').buildProtocol(('127.0.0.1', 0))
 
         self.obfs_server_proto.makeConnection(self.server_transport)
+        self.server_transport.protocol = self.obfs_server_proto
         self.obfs_client_proto.makeConnection(self.client_transport)
+        self.client_transport.protocol = self.obfs_client_proto
+
+    def test_client_goes_away(self):
+        self.assertTrue(self.obfs_server_proto.circuit.circuitIsReady())
+        self.obfs_server_proto.dataReceived(TEST_FILE)
+        self.obfs_server_proto.transport.loseConnection()
+        self.assertEqual(self.obfs_server_proto.closed, True)
 
     def test_client_transfer(self):
         self.assertTrue(self.obfs_server_proto.circuit.circuitIsReady())

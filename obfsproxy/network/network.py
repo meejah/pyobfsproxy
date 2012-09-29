@@ -227,7 +227,8 @@ class StaticDestinationProtocol(Protocol):
             self.direction = 'upstream'
 
     def connectionLost(self, reason):
-        log.info("%s: Connection was lost (%s)." % (self.name, reason.getErrorMessage()))
+        if not isinstance(reason, error.ConnectionDone):
+            log.info("%s: Connection was lost (%s)." % (self.name, reason.getErrorMessage()))
         self.circuit.close()
 
     def connectionFailed(self, reason):
